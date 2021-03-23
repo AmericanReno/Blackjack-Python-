@@ -4,7 +4,6 @@ from datetime import datetime, time
 from decimal import Decimal
 import locale as lc
 import random
-import sqlite3
 from contextlib import closing
 
 def cardCount(cardType):
@@ -28,7 +27,6 @@ def main():
     result = lc.setlocale(lc.LC_ALL, "")
     if result == "C":
         lc.setlocale(lc.LC_ALL, "en_US")
-    conn = sqlite3.connect("data.sqlite")
 
     while True:
         player = 0
@@ -126,43 +124,33 @@ def main():
         print()
         with open("money.txt", "w", newline="") as file:
             end = datetime.now()
-            with closing(conn.cursor()) as c:
-                if player > 21:
-                    print("Player busted! House always wins!")
-                    diff = money - bet
-                    ph = money
-                    money = round(money - bet, 2)
-                    localeMoney = Decimal(money)
-                    localeMoney = localeMoney.quantize(Decimal("1.00"))
-                    print("Money: " + lc.currency(localeMoney, grouping=True))
-                    file.write(str(money))
-                    sql = '''INSERT INTO Session(startTime, startMoney, addedMoney
-                            stopTime, stopMoney) VALUES (?, ?, ?, ?, ?)''' 
-                    c.execute(sql, (start, ph, diff, end, money))
-                elif dealer > 21:
-                    print("Dealer busted! Cash out, you're done at my tables")
-                    diff = money - bet
-                    ph = money
-                    money = round((bet * 1.5) + money, 2)
-                    localeMoney = Decimal(money)
-                    localeMoney = localeMoney.quantize(Decimal("1.00"))
-                    print("Money: " + lc.currency(localeMoney, grouping=True))
-                    file.write(str(money))
-                    sql = '''INSERT INTO Session(startTime, startMoney, addedMoney
-                            stopTime, stopMoney) VALUES (?, ?, ?, ?, ?)'''
-                    c.execute(sql, (start, ph, diff, end, money))
-                elif player <= dealer:
-                    print("Player lost! Better luck next time, pal!")
-                    ph = money
-                    diff = money - bet
-                    money = round(money - bet, 2)
-                    localeMoney = Decimal(money)
-                    localeMoney = localeMoney.quantize(Decimal("1.00"))
-                    print("Money: " + lc.currency(localeMoney, grouping=True))
-                    file.write(str(money))
-                    sql = '''INSERT INTO Session(startTime, startMoney, addedMoney
-                            stopTime, stopMoney) VALUES (?, ?, ?, ?, ?)'''
-                    c.execute(sql, (start, ph, diff, end, money))
+            if player > 21:
+                print("Player busted! House always wins!")
+                diff = money - bet
+                ph = money
+                money = round(money - bet, 2)
+                localeMoney = Decimal(money)
+                localeMoney = localeMoney.quantize(Decimal("1.00"))
+                print("Money: " + lc.currency(localeMoney, grouping=True))
+                file.write(str(money))
+            elif dealer > 21:
+                print("Dealer busted! Cash out, you're done at my tables")
+                diff = money - bet
+                ph = money
+                money = round((bet * 1.5) + money, 2)
+                localeMoney = Decimal(money)
+                localeMoney = localeMoney.quantize(Decimal("1.00"))
+                print("Money: " + lc.currency(localeMoney, grouping=True))
+                file.write(str(money))
+            elif player <= dealer:
+                print("Player lost! Better luck next time, pal!")
+                ph = money
+                diff = money - bet
+                money = round(money - bet, 2)
+                localeMoney = Decimal(money)
+                localeMoney = localeMoney.quantize(Decimal("1.00"))
+                print("Money: " + lc.currency(localeMoney, grouping=True))
+                file.write(str(money))
 
         print()
         choice = input("Play again? (y/n): ")
